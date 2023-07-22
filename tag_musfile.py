@@ -31,7 +31,7 @@ class MusFile():
         '''Retrieve tag information from a group of binary bytes (b) from an initial read
         position. Gets one ID3 tag'''
         tag_type = self.allbytes[initial_pos:initial_pos+self.step]
-        tag_size = int.from_bytes(self.allbytes[initial_pos+4:initial_pos+(self.step * 2)])
+        tag_size = int.from_bytes(self.allbytes[initial_pos+self.step:initial_pos+(self.step * 2)])
         self.read_pos += self.bindex + tag_size
         if all(byte == 0 for byte in self.allbytes[initial_pos:self.read_pos]):
             return False
