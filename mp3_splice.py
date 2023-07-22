@@ -65,13 +65,11 @@ def write_tags(musfile:MusFile, formtext):
 
         newtags[newkey] = sizebytes + newvalue
     # for key, value in newtags:
-    print(newtags)
 
     ID3_h_start = struct.pack('ssssss', b'I', b'D', b'3', b'\x03', b'\x00', b'\x00')
     ID3_size_int = 0
     for key, value in newtags.items():
         ID3_size_int += len(value) + len(key)
-    print(ID3_size_int)
     ID3_sizebytes = get_id3_sizebytes(ID3_size_int)
     ID3_header = ID3_h_start + ID3_sizebytes
     ID3_foot_bytes = b'\x00' * 127 + b'\xff'
@@ -84,41 +82,4 @@ def write_tags(musfile:MusFile, formtext):
     test_mp3.write(mpeg_data)
     test_mp3.write(ID3_footer)
     test_mp3.close()
-
-    
-    # ID3_size_bytes =
-    # ID3_header = ID3_h_start + 
-
-            
-        
-
-
-
-
-
-    # TIT2 = b'\x54\x49\x54\x32\x00\x00\x00\x0c\x00\x00\x00\x42\x00\x49\x00\x4c\x00\x4c\x00'
-    # bob = struct.pack('21c', b'\x54', b'\x49', b'\x54', b'\x32', b'\x00', b'\x00', b'\x00',
-    #                 b'\x0b', b'\x00', b'\x00', b'\x01', b'\xff', b'\xfe', b'\x42', b'\x00',
-    #                 b'\x49', b'\x00', b'\x4c', b'\x00', b'\x4c', b'\x00')
-    # TALB = b'TALB\x00\x00\x00\x0b\x00\x00\x01\xff\xfeD\x00A\x00T\x00A\x00'
-    # bill = struct.pack('22s', TIT2)
-    # TALB = struct.pack('21s', TALB)
-    # print(bob)
-    # print(bill)
-    # length_tags = len(TIT2)
-    # print(length_tags)
-    # ID3_h_start = b'ID3\x03\x00\x00'
-    # ID3_h_sizebytes = b'\x00' 
-    # a = bin(f'bob')
-    # print(a)
-    # ID3_header = struct.pack('10s', ID3_h_start, ID3_h_sizebytes)
-
-
-    # test_mp3.write(ID3_header)
-    # test_mp3.write(bob)
-    # test_mp3.write(TALB)
-    # test_mp3.write(mpeg_data)
-
-    # newfile_name = test_mp3.name
-    # test_mp3.close()
-    # return newfile_name
+    return True
