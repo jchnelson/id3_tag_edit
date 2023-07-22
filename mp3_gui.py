@@ -1,8 +1,9 @@
-import sys
+import sys, re
 from PyQt6 import QtWidgets
-from id3_standard_tags import tagdict as full_tagdict
 from id3_standard_tags import music_tags
 from tag_musfile import MusFile
+from mp3_splice import write_tags
+
 
 class MainWind(QtWidgets.QMainWindow):
     global initated
@@ -20,7 +21,7 @@ class MainWind(QtWidgets.QMainWindow):
             self.add_fieldrow(tagtype, initcall=True)
 
         self.adder = QtWidgets.QComboBox()
-        self.adder.addItems([f'{key}: {value}' for key,value in full_tagdict.items()])
+        self.adder.addItems([f'{key}: {value}' for key,value in self.musfile.tagdict.items()])
         self.add_btn = QtWidgets.QPushButton('Add Tag')
         self.add_btn.clicked.connect(self.add_tag)
 
@@ -30,7 +31,10 @@ class MainWind(QtWidgets.QMainWindow):
             try:
                 self.remover.addItem(music_tags[tagtype][0])
             except KeyError:
-                self.remover.addItem(full_tagdict[tagtype])
+                try:
+                    self.remover.addItem(self.musfile.tagdict[tagtype])
+                except KeyError:
+                    self.remover.addItem(f'Noncompliant Tag {tagtype}')
         self.remove_btn = QtWidgets.QPushButton('Remove Tag')
         self.remove_btn.clicked.connect(self.remove_tag)
 
@@ -53,18 +57,25 @@ class MainWind(QtWidgets.QMainWindow):
                 self.layout.insertRow(index, f"{music_tags[tagtype][0]} :", a)
                 self.remover.addItem(music_tags[tagtype][0])
             except KeyError:
-                self.layout.insertRow(index, f"{full_tagdict[tagtype]} :", a)
-                self.remover.addItem(full_tagdict[tagtype]) 
+                try:
+                    self.layout.insertRow(index, f"{self.musfile.tagdict[tagtype]} :", a)
+                    self.remover.addItem(self.musfile.tagdict[tagtype]) 
+                except KeyError:
+                    self.layout.insertRow(index, f"Noncompliant Tag {tagtype} :", a)
+                    self.remover.addItem(f"Noncompliant Tag {tagtype}")
             self.musfile.active_tags[tagtype] = '' 
         else:
             try:
                 self.layout.addRow(f"{music_tags[tagtype][0]} :", a)
             except KeyError:
-                self.layout.addRow(f"{full_tagdict[tagtype]} :", a)
+                try:
+                    self.layout.addRow(f"{self.musfile.tagdict[tagtype]} :", a)
+                except KeyError:
+                    self.layout.addRow(f"Noncompliant Tag {tagtype} :", a)
         if active:
             a.setPlaceholderText(f"{self.musfile.active_tags[tagtype]}")
         else:
-            a.setPlaceholderText(f"{full_tagdict[tagtype]}")
+            a.setPlaceholderText(f"{self.musfile.tagdict[tagtype]}")
 
 
         self.widgets[tagtype] = a
@@ -74,18 +85,28 @@ class MainWind(QtWidgets.QMainWindow):
             a.setMinimumWidth(self.max_lineedit)
 
     def remove_tag(self):
-        tagname = ''
-        for tagtype, tagtext in music_tags.items():
-            if self.remover.currentText() == tagtext[0]:
-                tagname = tagtype
-        for tagtype, tagtext in full_tagdict.items():
-            if self.remover.currentText() == tagtext:
-                tagname = tagtype
+        confirm = QtWidgets.QMessageBox
+        response = confirm.question(self, 'Confirm Removal', 'Really remove tag? \n'\
+                                           '(This action cannot be undone)',
+                                             confirm.StandardButton.Yes |
+                                               confirm.StandardButton.No)
+        
+        if response == confirm.StandardButton.Yes:
+            tagname = ''
+            for tagtype, tagtext in music_tags.items():
+                if self.remover.currentText() == tagtext[0]:
+                    tagname = tagtype
+            for tagtype, tagtext in self.musfile.tagdict.items():
+                if self.remover.currentText() == tagtext:
+                    tagname = tagtype
+            if tagname == '':
+                tagmatch = re.search('Noncompliant Tag (.+)', self.remover.currentText())
+                tagname = tagmatch.group(1)
 
-        self.remover.removeItem(self.remover.currentIndex())
-        a = self.layout.getWidgetPosition(self.widgets[tagname])
-        self.layout.removeRow(a[0])
-        self.musfile.active_tags.pop(tagname)
+            self.remover.removeItem(self.remover.currentIndex())
+            a = self.layout.getWidgetPosition(self.widgets[tagname])
+            self.layout.removeRow(a[0])
+            self.musfile.active_tags.pop(tagname)
 
     def add_tag(self):
         tagname = self.adder.currentText()[:4]
@@ -102,6 +123,7 @@ class MainWind(QtWidgets.QMainWindow):
         formtext = {}
         for tagtype, widget in self.widgets.items():
             formtext[tagtype] = widget.text()
+        write_tags(self.musfile)
         print(formtext)
 
 
