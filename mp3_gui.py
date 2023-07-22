@@ -1,12 +1,16 @@
-import sys, re
+import sys, re, logging
 from PyQt6 import QtWidgets
 from id3_standard_tags import music_tags
 from tag_musfile import MusFile
 from mp3_splice import write_tags
 
+logging.basicConfig(level=logging.DEBUG, filename='mp3_gui.log', 
+                    format='%(asctime)s - %(levelname)s : %(message)s', force=True)
 
-class MainWind(QtWidgets.QMainWindow):
-    global initated
+
+class MusWind(QtWidgets.QMainWindow):
+    '''Create main window, also holds instance of MusFile to manipulate its data
+    '''
     def __init__(self, taglist, musfile:MusFile):
         super().__init__()
         self.taglist = taglist
@@ -50,6 +54,9 @@ class MainWind(QtWidgets.QMainWindow):
         self.setCentralWidget(self.container)
 
     def add_fieldrow(self, tagtype, initcall=False, active=True):
+        '''Add rows to form layout upon creation of MainWindow, insert rows
+        when called by button
+        '''
         a = QtWidgets.QLineEdit()
         if not initcall:
             index = self.layout.getWidgetPosition(self.add_btn)[0]
@@ -85,6 +92,9 @@ class MainWind(QtWidgets.QMainWindow):
             a.setMinimumWidth(self.max_lineedit)
 
     def remove_tag(self):
+        '''Confirm removal of tag from proposed and remove gui row containing it,
+        as well as references to widgets and the data itself, then remove it
+        '''
         confirm = QtWidgets.QMessageBox
         response = confirm.question(self, 'Confirm Removal', 'Really remove tag? \n'\
                                            '(This action cannot be undone)',
@@ -106,6 +116,7 @@ class MainWind(QtWidgets.QMainWindow):
             self.remover.removeItem(self.remover.currentIndex())
             a = self.layout.getWidgetPosition(self.widgets[tagname])
             self.layout.removeRow(a[0])
+            self.widgets.pop(tagname)
             self.musfile.active_tags.pop(tagname)
 
     def add_tag(self):
@@ -123,7 +134,11 @@ class MainWind(QtWidgets.QMainWindow):
         formtext = {}
         for tagtype, widget in self.widgets.items():
             formtext[tagtype] = widget.text()
-        write_tags(self.musfile)
+            if widget.text() == '':
+                formtext[tagtype] = widget.placeholderText()
+        logging.debug('Handing off to write_tags...')
+        logging.debug(f'formtext = {formtext}')
+        write_tags(self.musfile, formtext)
         print(formtext)
 
 
@@ -134,7 +149,7 @@ if __name__ == "__main__":
                                      caption='Choose a Song', filter="Mp3 Files (*.mp3)")
     musfile = MusFile(filename[0])
 
-    window = MainWind(list(musfile.active_tags.keys()), musfile)
+    window = MusWind(list(musfile.active_tags.keys()), musfile)
     window.show()
 
     sys.exit(app.exec())

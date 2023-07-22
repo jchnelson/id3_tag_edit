@@ -10,6 +10,7 @@ class MusFile():
     '''Base object for creating and holding tag information'''
     def __init__(self, filename):
         self.read_pos = 10
+        self.filename = filename
         self.file = open(filename, 'rb')
         self.allbytes = self.file.read()
         self.id3_version = self.allbytes[3]
@@ -61,9 +62,9 @@ class MusFile():
             logging.debug(f'Processing {tagtype}, {tag}')
             for i in range(len(tag)-2, -1, -1):
                 if tag[i] == 0:
-                    logging.debug(f'Removing {tag[i]}')
+                    # logging.debug(f'Removing {tag[i]}')
                     tag = tag[:i] + tag[i+1:]
-                    logging.debug(f"Result {tag.decode(errors='replace')}")
+                    # logging.debug(f"Result {tag.decode(errors='replace')}")
 
             if tag[-1] == 0:
                 tag = tag[:-1]
