@@ -53,9 +53,9 @@ class FlacWind(QtWidgets.QMainWindow):
         a = QtWidgets.QLineEdit()
         if not initcall:
             index = self.layout.getWidgetPosition(self.add_btn)[0]
-            self.layout.insertRow(index, f"{self.flacfile.vcomments[tagtype]} :", a)
-            self.remover.addItem(self.flacfile.vcomments[tagtype])
-            self.musfile.active_tags[tagtype] = '' 
+            self.layout.insertRow(index, f"{vorbis_dict[tagtype]} :", a)
+            self.remover.addItem(vorbis_dict[tagtype])
+            self.flacfile.vcomments[tagtype] = '' 
         else:
             self.layout.addRow(f"{vorbis_dict[tagtype]} :", a)
 
@@ -82,14 +82,7 @@ class FlacWind(QtWidgets.QMainWindow):
                                                confirm.StandardButton.No)
         
         if response == confirm.StandardButton.Yes:
-            tagname = ''
-            for tagtype, tagtext in self.flacfile.vcomments.items():
-                if self.remover.currentText() == tagtext[0]:
-                    tagname = tagtype
-            if tagname == '':
-                tagmatch = re.search('Noncompliant Tag (.+)', self.remover.currentText())
-                tagname = tagmatch.group(1)
-
+            tagname = self.remover.currentText()
             self.remover.removeItem(self.remover.currentIndex())
             a = self.layout.getWidgetPosition(self.widgets[tagname])
             self.layout.removeRow(a[0])
@@ -97,9 +90,10 @@ class FlacWind(QtWidgets.QMainWindow):
             self.flacfile.vcomments.pop(tagname)
 
     def add_tag(self):
-        tagname = self.adder.currentText()[:4]
+        tagmatch = re.search(r'(.*?): (.+)', self.adder.currentText())
+        tagname = tagmatch.group(1)
         remover_options = [self.remover.itemText(i) for i in range(self.remover.count())]
-        if self.adder.currentText()[6:] not in remover_options:
+        if tagmatch.group(2) not in remover_options:
             if tagname in self.flacfile.vcomments:
                 self.add_fieldrow(tagname)
             else:
