@@ -284,3 +284,30 @@ genre_list = {'0': 'Blues',
  '98': 'Easy Listening',
  '99': 'Acoustic'}
 
+vorbis_dict = {'TITLE': 'Track/Work name',
+'VERSION' : 'Version of track title (e.g. remix info)',
+'ALBUM' : 'Name of album',
+'TRACKNUMBER': "Track number",
+'ARTIST': 'Artist/Group name',
+'PERFORMER': 'The artist(s) who performed the work',
+'COPYRIGHT': 'Copyright attribution',
+'LICENSE': 'License information',
+'ORGANIZATION': 'Record label',
+'DESCRIPTION': 'A short description',
+'GENRE': 'Genre',
+'DATE': 'Date recorded',
+'LOCATION': 'Location recorded',
+'CONTACT': 'Contact information',
+'ISRC': 'ISRC number',
+'COMPOSER': 'Composer name',
+'ALBUM ARTIST' : 'Artist name',
+'ALBUMARTIST' : 'Artist name',
+'DISCNUMBER' : 'Disc Number',
+'TOTALDISCS' : 'Total number of discs',
+'TOTALTRACKS' : 'Total number of tracks',
+'COMMENT' : 'A short comment',
+
+
+
+
+}
