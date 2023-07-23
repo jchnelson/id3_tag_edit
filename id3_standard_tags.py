@@ -372,4 +372,6 @@ vorbis_dict = {'TITLE': 'Track/Work name',
 'RIGHTS' : 'Rights',
 'SCRIPT' : 'Script',
 'LYRICS' : 'Lyrics',
+'DISC' : 'Disc Number',
+'RATING' : 'Rating',
 }

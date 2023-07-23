@@ -1,6 +1,7 @@
 import sys, re, logging
 from PyQt6 import QtWidgets
-from flac_splice import FlacFile
+from PyQt6.QtCore import Qt
+from tag_flacfile import FlacFile
 from id3_standard_tags import vorbis_dict
 
 logging.basicConfig(level=logging.DEBUG, filename='flac_gui.log', 
@@ -42,9 +43,14 @@ class FlacWind(QtWidgets.QMainWindow):
         self.main_button.clicked.connect(self.main_clicked)
         self.layout.addRow('', self.main_button)
 
+        self.scroll = QtWidgets.QScrollArea()
         self.container = QtWidgets.QWidget()
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.container)
         self.container.setLayout(self.layout)
-        self.setCentralWidget(self.container)
+        self.setCentralWidget(self.scroll)
 
     def add_fieldrow(self, tagtype, initcall=False, active=True):
         '''Add rows to form layout upon creation of MainWindow, insert rows
@@ -57,12 +63,18 @@ class FlacWind(QtWidgets.QMainWindow):
             self.remover.addItem(tagtype)
             self.flacfile.vcomments[tagtype] = '' 
         else:
-            self.layout.addRow(f"{vorbis_dict[tagtype]} :", a)
+            try:
+                self.layout.addRow(f"{vorbis_dict[tagtype]} :", a)
+            except:
+                self.layout.addRow(f'{tagtype} :', a)
 
         if active:
             a.setPlaceholderText(f"{self.flacfile.vcomments[tagtype]}")
         else:
-            a.setPlaceholderText(f"{vorbis_dict[tagtype]}")
+            try:
+                a.setPlaceholderText(f"{vorbis_dict[tagtype]}")
+            except KeyError:
+                a.setPlaceholderText(f'{tagtype}')
 
 
         self.widgets[tagtype] = a
