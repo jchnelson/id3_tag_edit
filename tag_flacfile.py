@@ -12,19 +12,26 @@ class FlacFile():
         logging.debug(f'Reading {self.allbytes[:4].decode()} at {self.file.name}') 
         self.read_pos = 42
         self.block_dict = self.get_metadata_blocks()
-        self.vcomment_block = self.block_dict[4]
-        self.vcomments, self.venstring = self.get_vorbis_comments()
+        self.vcomment_block = self.block_dict[4][0]
+        self.vcomments, self.venstring, self.final_read_pos = self.get_vorbis_comments()
 
     def get_metadata_blocks(self):
         block_dict = {}
-        while self.allbytes[self.read_pos] != 129:   # stop at identifier for padding block
+
+        breaker = False
+        while True:   
             block_type = self.allbytes[self.read_pos]
             next_block_size = int.from_bytes(self.allbytes[self.read_pos+1:self.read_pos + 4])
-            logging.debug(f'Getting next block (type {self.allbytes[self.read_pos]}), \
-size {next_block_size}')
+            logging.debug(f'Getting next block (type {block_type}), size {next_block_size}')
             self.read_pos += 4
-            block_dict[block_type] = self.allbytes[self.read_pos:self.read_pos+next_block_size]
+            block_dict[block_type] = (self.allbytes[self.read_pos:self.read_pos+next_block_size],
+                                      next_block_size)
             self.read_pos += next_block_size
+            if breaker:
+                break
+            if self.allbytes[self.read_pos] == 129:  # one more loop if padding block ID
+                breaker = True
+
         return block_dict
 
     def get_vorbis_comments(self):
@@ -45,11 +52,11 @@ size {next_block_size}')
             comment = bk[vread_pos:vread_pos+comm_length]
             logging.debug(f'Getting comment, length {comm_length}, {comment}')
             vread_pos += comm_length
-            # vcomments.append(comment)
             
             lr = re.search(b'(.*?)=(.+)', comment)
             try:
                 vcomments[lr.group(1).decode().upper()] = lr.group(2).decode()
             except AttributeError:  # Vorbis comment blank i.e. 'TAG='
                 logging.debug(f'Likely blank comment, verify: {comment}')
-        return vcomments, ven_string
+
+        return vcomments, ven_string, vread_pos

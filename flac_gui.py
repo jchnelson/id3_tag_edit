@@ -3,6 +3,7 @@ from PyQt6 import QtWidgets
 from PyQt6.QtCore import Qt
 from tag_flacfile import FlacFile
 from id3_standard_tags import vorbis_dict
+from flac_splice import write_tags
 
 logging.basicConfig(level=logging.DEBUG, filename='flac_gui.log', 
                     format='%(asctime)s - %(levelname)s : %(message)s', force=True)
@@ -45,8 +46,8 @@ class FlacWind(QtWidgets.QMainWindow):
 
         self.scroll = QtWidgets.QScrollArea()
         self.container = QtWidgets.QWidget()
-        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        # self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        # self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.container)
         self.container.setLayout(self.layout)
@@ -93,7 +94,7 @@ class FlacWind(QtWidgets.QMainWindow):
                                              confirm.StandardButton.Yes |
                                                confirm.StandardButton.No)
         
-        if response == confirm.StandardButton.Yes:
+        if response == confirm.StandardButton.Yes and self.remover.currentText():
             tagname = self.remover.currentText()
             self.remover.removeItem(self.remover.currentIndex())
             a = self.layout.getWidgetPosition(self.widgets[tagname])
@@ -102,26 +103,28 @@ class FlacWind(QtWidgets.QMainWindow):
             self.flacfile.vcomments.pop(tagname)
 
     def add_tag(self):
-        tagmatch = re.search(r'(.*?): (.+)', self.adder.currentText())
-        tagname = tagmatch.group(1)
-        remover_options = [self.remover.itemText(i) for i in range(self.remover.count())]
-        if tagmatch.group(1) not in remover_options:
-            if tagname in self.flacfile.vcomments:
-                self.add_fieldrow(tagname)
-            else:
-                self.add_fieldrow(tagname, active=False)
+        if self.adder.currentText():
+            tagmatch = re.search(r'(.*?): (.+)', self.adder.currentText())
+            tagname = tagmatch.group(1)
+            remover_options = [self.remover.itemText(i) for i in range(self.remover.count())]
+            if tagmatch.group(1) not in remover_options:
+                if tagname in self.flacfile.vcomments:
+                    self.add_fieldrow(tagname)
+                else:
+                    self.add_fieldrow(tagname, active=False)
                 
         
 
     def main_clicked(self):
-        formtext = {}
+        formtext = []
         for tagtype, widget in self.widgets.items():
-            formtext[tagtype] = widget.text()
             if widget.text() == '':
-                formtext[tagtype] = widget.placeholderText()
+                formtext.append(f'{tagtype}={widget.placeholderText()}')
+            else:
+                formtext.append(f'{tagtype}={widget.text()}')
         logging.debug('Handing off to write_tags...')
         logging.debug(f'formtext = {formtext}')
-        # write_tags(self.musfile, formtext)
+        write_tags(self.flacfile, formtext)
         print(formtext)
 
 
