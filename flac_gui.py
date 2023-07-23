@@ -54,7 +54,7 @@ class FlacWind(QtWidgets.QMainWindow):
         if not initcall:
             index = self.layout.getWidgetPosition(self.add_btn)[0]
             self.layout.insertRow(index, f"{vorbis_dict[tagtype]} :", a)
-            self.remover.addItem(vorbis_dict[tagtype])
+            self.remover.addItem(tagtype)
             self.flacfile.vcomments[tagtype] = '' 
         else:
             self.layout.addRow(f"{vorbis_dict[tagtype]} :", a)
@@ -93,7 +93,7 @@ class FlacWind(QtWidgets.QMainWindow):
         tagmatch = re.search(r'(.*?): (.+)', self.adder.currentText())
         tagname = tagmatch.group(1)
         remover_options = [self.remover.itemText(i) for i in range(self.remover.count())]
-        if tagmatch.group(2) not in remover_options:
+        if tagmatch.group(1) not in remover_options:
             if tagname in self.flacfile.vcomments:
                 self.add_fieldrow(tagname)
             else:
