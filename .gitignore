@@ -1,4 +1,6 @@
 deprecated/
 __pycache__/
+music/
 *.mp3
 *.log
+*.flac
