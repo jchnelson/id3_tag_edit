@@ -46,8 +46,6 @@ class FlacWind(QtWidgets.QMainWindow):
 
         self.scroll = QtWidgets.QScrollArea()
         self.container = QtWidgets.QWidget()
-        # self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        # self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.container)
         self.container.setLayout(self.layout)
@@ -103,6 +101,8 @@ class FlacWind(QtWidgets.QMainWindow):
             self.flacfile.vcomments.pop(tagname)
 
     def add_tag(self):
+        '''If tag doesn't exist in the GUI already, add it through
+            add_fieldrow.'''
         if self.adder.currentText():
             tagmatch = re.search(r'(.*?): (.+)', self.adder.currentText())
             tagname = tagmatch.group(1)
@@ -116,6 +116,10 @@ class FlacWind(QtWidgets.QMainWindow):
         
 
     def main_clicked(self):
+        '''If text has been entered into form layout, use that to create 
+            vorbis comment structure, otherwise use placeholder text of the 
+            original tag to make the comment. Send the results to write_tags.
+        '''
         formtext = []
         for tagtype, widget in self.widgets.items():
             if widget.text() == '':
@@ -125,7 +129,6 @@ class FlacWind(QtWidgets.QMainWindow):
         logging.debug('Handing off to write_tags...')
         logging.debug(f'formtext = {formtext}')
         write_tags(self.flacfile, formtext)
-        print(formtext)
 
 
 if __name__ == "__main__":

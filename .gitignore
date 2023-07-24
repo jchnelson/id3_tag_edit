@@ -1,4 +1,5 @@
 deprecated/
+output/
 __pycache__/
 music/
 *.mp3

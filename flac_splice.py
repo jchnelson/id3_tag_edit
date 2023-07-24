@@ -6,6 +6,10 @@ logging.basicConfig(level=logging.DEBUG, filename='mp3_splice.log',
 
 
 def write_tags(flacfile: FlacFile, formtext):
+    '''Given input from flac_gui form, create proper binary-format comments
+        and combine it with other comments to make a comment block, then stitch
+        it back together with the other data from the flac file.
+    '''
     tagdict = {}
     for tag in formtext:
         logging.debug(f'Processing tag {tag} length {len(tag)}')
@@ -15,7 +19,6 @@ def write_tags(flacfile: FlacFile, formtext):
             char = ord(char)
             btag += struct.pack('B', char)
         tagdict[btag] = tag_length
-    print(tagdict)
     test_flac = open('test.flac', 'wb')
     test_flac.write(flacfile.allbytes[:42])
     for type, blocktup in flacfile.block_dict.items():
