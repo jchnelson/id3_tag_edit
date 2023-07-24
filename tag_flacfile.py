@@ -13,7 +13,7 @@ class FlacFile():
         self.read_pos = 42
         self.block_dict = self.get_metadata_blocks()
         self.vcomment_block = self.block_dict[4][0]
-        self.vcomments, self.venstring, self.final_read_pos = self.get_vorbis_comments()
+        self.vcomments, self.venstring = self.get_vorbis_comments()
 
     def get_metadata_blocks(self):
         block_dict = {}
@@ -59,4 +59,4 @@ class FlacFile():
             except AttributeError:  # Vorbis comment blank i.e. 'TAG='
                 logging.debug(f'Likely blank comment, verify: {comment}')
 
-        return vcomments, ven_string, vread_pos
+        return vcomments, ven_string
