@@ -20,7 +20,7 @@ def write_tags(flacfile: FlacFile, formtext):
             char = ord(char)
             btag += struct.pack('B', char)
         tagdict[btag] = tag_length
-        cblock_newsize += len(btag) + len(tag_length) + 4
+        cblock_newsize += len(btag) + len(tag_length)
     cblock_newsize += len(flacfile.venstring) + 8   # venstring, its size, and # of comments
 
     test_flac = open('test.flac', 'wb')
