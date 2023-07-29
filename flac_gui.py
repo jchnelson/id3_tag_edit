@@ -128,7 +128,11 @@ class FlacWind(QtWidgets.QMainWindow):
                 formtext.append(f'{tagtype}={widget.text()}')
         logging.debug('Handing off to write_tags...')
         logging.debug(f'formtext = {formtext}')
-        write_tags(self.flacfile, formtext)
+        success = write_tags(self.flacfile, formtext)
+        if success:
+            info = QtWidgets.QMessageBox
+            info.information(self, "Success","File successfully created in \n output folder!")
+
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ def write_tags(flacfile: FlacFile, formtext):
         cblock_newsize += len(btag) + len(tag_length)
     cblock_newsize += len(flacfile.venstring) + 8   # venstring, its size, and # of comments
 
-    test_flac = open('test.flac', 'wb')
+    test_flac = open('output/test.flac', 'wb')
     # test_flac.write(flacfile.allbytes[:26])
     # blank_md5 = b'\x00' * 16
     # test_flac.write(blank_md5)

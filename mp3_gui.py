@@ -138,8 +138,11 @@ class MusWind(QtWidgets.QMainWindow):
                 formtext[tagtype] = widget.placeholderText()
         logging.debug('Handing off to write_tags...')
         logging.debug(f'formtext = {formtext}')
-        write_tags(self.musfile, formtext)
-
+        success = write_tags(self.musfile, formtext)
+        if success:
+            info = QtWidgets.QMessageBox
+            info.information(self, "Success" , "File successfully created in \n output folder!")
+      
 
 if __name__ == "__main__":
 

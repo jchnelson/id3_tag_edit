@@ -71,7 +71,7 @@ def write_tags(musfile:MusFile, formtext):
     ID3_header = ID3_h_start + ID3_sizebytes
     ID3_foot_bytes = b'\x00' * 127 + b'\xff'
     ID3_footer = struct.pack('128s', ID3_foot_bytes)
-    test_mp3 = open('test.mp3', 'wb')
+    test_mp3 = open('output/test.mp3', 'wb')
     mpeg_data = musfile.allbytes[musfile.id3_length:-128]
     test_mp3.write(ID3_header)
     for tagtype, tagdata in newtags.items():
