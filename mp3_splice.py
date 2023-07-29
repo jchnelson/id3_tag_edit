@@ -30,9 +30,7 @@ def get_id3_sizebytes(size_int):
     first_8 = '0b' + a.rjust(8, '0')
     size_0b_ints.append(first_8)
 
-    print(size_0b_ints)
     size_ints = [int(bint, 2) for bint in size_0b_ints]
-    print(size_ints)
 
     while len(size_ints)<4:
         size_ints.append(0)
@@ -61,7 +59,6 @@ def write_tags(musfile:MusFile, formtext):
             char = ord(char)
             newvalue += struct.pack('Bs', char, b'\x00')
         sizebytes = struct.pack('>Lss', len(newvalue), b'\x00', b'\x00')
-        print(sizebytes)
 
         newtags[newkey] = sizebytes + newvalue
     # for key, value in newtags:

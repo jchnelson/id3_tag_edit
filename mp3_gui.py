@@ -139,7 +139,6 @@ class MusWind(QtWidgets.QMainWindow):
         logging.debug('Handing off to write_tags...')
         logging.debug(f'formtext = {formtext}')
         write_tags(self.musfile, formtext)
-        print(formtext)
 
 
 if __name__ == "__main__":
