@@ -24,10 +24,10 @@ def write_tags(flacfile: FlacFile, formtext):
     cblock_newsize += len(flacfile.venstring) + 8   # venstring, its size, and # of comments
 
     test_flac = open('test.flac', 'wb')
-    test_flac.write(flacfile.allbytes[:26])
-    blank_md5 = b'\x00' * 16
-    test_flac.write(blank_md5)
-    # test_flac.write(flacfile.allbytes[:42])
+    # test_flac.write(flacfile.allbytes[:26])
+    # blank_md5 = b'\x00' * 16
+    # test_flac.write(blank_md5)
+    test_flac.write(flacfile.allbytes[:42])
 
     for type, blocktup in flacfile.block_dict.items():
         test_flac.write(struct.pack('B', type))

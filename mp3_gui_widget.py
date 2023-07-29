@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.DEBUG, filename='mp3_gui.log',
                     format='%(asctime)s - %(levelname)s : %(message)s', force=True)
 
 
-class MusWind(QtWidgets.QMainWindow):
+class MusWind(QtWidgets.QWidget):
     '''Create main window, also holds instance of MusFile to manipulate its data
     '''
     def __init__(self, musfile:MusFile):
@@ -42,16 +42,23 @@ class MusWind(QtWidgets.QMainWindow):
         self.remove_btn = QtWidgets.QPushButton('Remove Tag')
         self.remove_btn.clicked.connect(self.remove_tag)
 
-        self.layout.addRow(self.add_btn, self.adder, )
+        self.layout.addRow(self.add_btn, self.adder)
         self.layout.addRow(self.remove_btn, self.remover)
 
         self.main_button = QtWidgets.QPushButton('Confirm')
         self.main_button.clicked.connect(self.main_clicked)
         self.layout.addRow('', self.main_button)
 
+        self.scroll = QtWidgets.QScrollArea()
         self.container = QtWidgets.QWidget()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.container)
         self.container.setLayout(self.layout)
-        self.setCentralWidget(self.container)
+
+        wlayout = QtWidgets.QVBoxLayout()
+        self.setLayout(wlayout)
+        wlayout.addWidget(self.scroll)
+
 
     def add_fieldrow(self, tagtype, initcall=False, active=True):
         '''Add rows to form layout upon creation of MainWindow, insert rows

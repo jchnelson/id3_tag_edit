@@ -85,9 +85,9 @@ if __name__ == '__main__':
     print('\n')
     for tag, value in musfile.active_tags.items():
         if tag not in musfile.tagdict:
-            jtag_type = f'Noncompliant "{tag}"'.ljust(60, '-')
+            jtag_type = f'Noncompliant "{tag}"'.ljust(50, '-')
         else:
-            jtag_type = musfile.tagdict[tag].ljust(60, '-')
-        jtag_value = value.rjust(70, '-')
+            jtag_type = musfile.tagdict[tag].ljust(50, '-')
+        jtag_value = value.rjust(60, '-')
         print(f' {jtag_type} {jtag_value}')
     print('\n')
