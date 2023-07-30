@@ -53,8 +53,10 @@ def write_tags(flacfile: FlacFile, formtext):
             for tag, length in tagdict.items():
                 logging.debug(f'Writing {tag}')
                 test_flac.write(length + tag)
+
     
     logging.debug('Finished writing blocks. Writing audio data...')
     test_flac.write(flacfile.allbytes[flacfile.read_pos:])
     logging.debug('Audio data written. Closing file...')
     test_flac.close()
+    return True
