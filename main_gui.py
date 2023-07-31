@@ -6,6 +6,7 @@ from tag_musfile import MusFile
 from flac_gui_widget import FlacWind
 from tag_flacfile import FlacFile
 from flac_gui_widget_folder import FlacFolderWind
+from mp3_gui_widget_folder import MusFolderWind
 
 logging.basicConfig(level=logging.DEBUG, filename='main_gui.log',  force=True,
                     format='%(asctime)s - %(levelname)s : %(message)s')
@@ -106,7 +107,8 @@ class MusMainWindow(QtWidgets.QMainWindow):
                         if all(mp3.active_tags.get(tag) == anymp3.active_tags.get(tag)
                                 for mp3 in mp3files.values()):    
                             commontags[tag] = anymp3.active_tags[tag]
-                print(commontags) 
+                self.w = MusFolderWind(mp3files, commontags)
+                self.w.show() 
 
             else:
                 raise TypeError("All audio files must be same format")

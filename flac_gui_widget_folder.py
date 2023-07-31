@@ -1,4 +1,4 @@
-import sys, re, logging, copy
+import sys, re, logging
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import Qt
 from tag_flacfile import FlacFile
@@ -16,7 +16,7 @@ class FlacFolderWind(QtWidgets.QWidget):
         super().__init__()
         self.widgets = {}
         self.flacfiles = flacfiles
-        self.fullcommontags = copy.deepcopy(commontags)
+        self.fullcommontags = commontags.copy()
         self.commontags = commontags
 
         self.setWindowTitle('Vorbis Comment Edit')

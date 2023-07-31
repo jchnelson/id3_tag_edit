@@ -1,6 +1,6 @@
 import re, logging
 
-logging.basicConfig(level=logging.DEBUG, filename='flac_splice.log', 
+logging.basicConfig(level=logging.DEBUG, filename='tag_flacfile.log', 
                     format='%(asctime)s - %(levelname)s : %(message)s')
 
 
