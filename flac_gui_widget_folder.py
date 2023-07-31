@@ -1,4 +1,4 @@
-import sys, re, logging
+import sys, re, logging, copy
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import Qt
 from tag_flacfile import FlacFile
@@ -16,6 +16,7 @@ class FlacFolderWind(QtWidgets.QWidget):
         super().__init__()
         self.widgets = {}
         self.flacfiles = flacfiles
+        self.fullcommontags = copy.deepcopy(commontags)
         self.commontags = commontags
 
         self.setWindowTitle('Vorbis Comment Edit')
@@ -135,6 +136,11 @@ class FlacFolderWind(QtWidgets.QWidget):
                 self.flacfile.newtitle = self.widgets['TITLE'].text()
         except KeyError:  # Allow for case of non-standard title tag
             pass
+        for tagtype, tagdata in self.fullcommontags.items():
+            if tagtype in self.fullcommontags:
+                if not tagtype in newtags:
+                    for flac in self.flacfiles.values():
+                        flac.vcomments.pop(tagtype)
         logging.debug('Handing off to write_tags...')
         logging.debug(f'newtags = {newtags}')
         full_success = 0
