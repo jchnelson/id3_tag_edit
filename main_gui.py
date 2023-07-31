@@ -1,10 +1,14 @@
-import sys, os
+import sys, os, logging
 from pathlib import Path
 from PyQt6 import QtWidgets, QtGui, QtCore
 from mp3_gui_widget import MusWind
 from tag_musfile import MusFile
 from flac_gui_widget import FlacWind
 from tag_flacfile import FlacFile
+from flac_gui_widget_folder import FlacFolderWind
+
+logging.basicConfig(level=logging.DEBUG, filename='main_gui.log',  force=True,
+                    format='%(asctime)s - %(levelname)s : %(message)s')
 
 class MusMainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -56,6 +60,10 @@ class MusMainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.container)
 
     def file_select(self):
+        '''Process file or directory selected through the QTreeView, get 
+        tags in common and send that information to a separate window for
+        editing those common tags.
+        '''
         index = self.file_list.currentIndex()
         selected_file = self.filesystem.filePath(index)
         selected_file_path = Path(selected_file)
@@ -69,15 +77,36 @@ class MusMainWindow(QtWidgets.QMainWindow):
 
             if all(file.endswith('.flac') for file in files_to_edit):
                 flacfiles = {}
+                tagnames = set()
                 for file in files_to_edit:
-                    flacfiles[Path(file).stem] = FlacFile(file)
-                print(flacfiles)
+                    flacfiles[Path(file)] = FlacFile(file)
+                for tag in flacfiles[Path(file)].vcomments.keys():
+                    tagnames.add(tag)
+                commontags = {}
+                anyflac = list(flacfiles.values())[0]
+                for tag in tagnames:
+                        if all(flac.vcomments.get(tag) == anyflac.vcomments.get(tag)
+                                for flac in flacfiles.values()):    
+                            commontags[tag] = anyflac.vcomments[tag] 
+                self.w = FlacFolderWind(flacfiles, commontags)
+                self.w.show()
+                                
+
 
             elif all((file.endswith('.mp3') for file in files_to_edit)):
                 mp3files = {}
+                tagnames = set()
                 for file in files_to_edit:
-                    mp3files[Path(file).stem] = MusFile(file)
-                print(mp3files)
+                    mp3files[Path(file)] = MusFile(file)
+                for tag in mp3files[Path(file)].active_tags.keys():
+                    tagnames.add(tag)
+                commontags = {}
+                anymp3 = list(mp3files.values())[0]
+                for tag in tagnames:
+                        if all(mp3.active_tags.get(tag) == anymp3.active_tags.get(tag)
+                                for mp3 in mp3files.values()):    
+                            commontags[tag] = anymp3.active_tags[tag]
+                print(commontags) 
 
             else:
                 raise TypeError("All audio files must be same format")

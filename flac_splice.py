@@ -1,7 +1,7 @@
-import struct, logging
+import struct, logging, os
 from tag_flacfile import FlacFile
 
-logging.basicConfig(level=logging.DEBUG, filename='mp3_splice.log', 
+logging.basicConfig(level=logging.DEBUG, filename='flac_splice.log', 
                     format='%(asctime)s - %(levelname)s : %(message)s', force=True)
 
 
@@ -22,8 +22,11 @@ def write_tags(flacfile: FlacFile, formtext):
         tagdict[btag] = tag_length
         cblock_newsize += len(btag) + len(tag_length)
     cblock_newsize += len(flacfile.venstring) + 8   # venstring, its size, and # of comments
-
-    test_flac = open('output/test.flac', 'wb')
+    filename = os.path.basename(flacfile.filename)
+    os.makedirs('output', exist_ok=True)
+    test_flac = open(f'output/{filename}', 'wb')
+    # writing a blank md5 doesn't seem necessary if the md5 in place is good, leaving 
+    # here in case that turns out not to be true
     # test_flac.write(flacfile.allbytes[:26])
     # blank_md5 = b'\x00' * 16
     # test_flac.write(blank_md5)
