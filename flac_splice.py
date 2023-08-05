@@ -22,14 +22,14 @@ def write_tags(flacfile: FlacFile, formtext):
         tagdict[btag] = tag_length
         cblock_newsize += len(btag) + len(tag_length)
     cblock_newsize += len(flacfile.venstring) + 8   # venstring, its size, and # of comments
+
+    fulldir = os.path.dirname(flacfile.filename)
+    filedir = os.path.split(fulldir)[1]
     filename = os.path.basename(flacfile.filename)
     os.makedirs('output', exist_ok=True)
-    test_flac = open(f'output/{filename}', 'wb')
-    # writing a blank md5 doesn't seem necessary if the md5 in place is good, leaving 
-    # here in case that turns out not to be true
-    # test_flac.write(flacfile.allbytes[:26])
-    # blank_md5 = b'\x00' * 16
-    # test_flac.write(blank_md5)
+    os.makedirs(f'output/{filedir}', exist_ok=True)
+    test_flac = open(f'output/{filedir}/{filename}', 'wb')
+    
     test_flac.write(flacfile.allbytes[:42])
 
     for type, blocktup in flacfile.block_dict.items():
