@@ -22,9 +22,7 @@ class FlacFolderWind(QtWidgets.QWidget):
         self.setWindowTitle('Vorbis Comment Edit')
         self.layout = QtWidgets.QFormLayout()
 
-        self.max_lineedit = 0
-        for comment in self.commontags:
-            self.add_fieldrow(comment, initcall=True)
+
 
         self.adder = QtWidgets.QComboBox()
         self.adder.setPlaceholderText('Select Vorbis Comment to Add')
@@ -39,6 +37,16 @@ class FlacFolderWind(QtWidgets.QWidget):
         self.remove_btn = QtWidgets.QPushButton('Remove Tag')
         self.remove_btn.clicked.connect(self.remove_tag)
 
+        fm = self.remover.fontMetrics()
+        self.remover_width = max([fm.boundingRect(self.remover.itemText(i)).width() 
+                        for i in range(self.remover.count())])
+        self.remover.view().setMinimumWidth(self.remover_width)
+
+        self.max_lineedit = 0
+        self.max_label = 0
+        for comment in self.commontags:
+            self.add_fieldrow(comment, initcall=True)
+
         self.layout.addRow(self.add_btn, self.adder)
         self.layout.addRow(self.remove_btn, self.remover)
 
@@ -47,14 +55,21 @@ class FlacFolderWind(QtWidgets.QWidget):
         self.layout.addRow('', self.main_button)
 
         self.scroll = QtWidgets.QScrollArea()
+        self.scroller = self.scroll
         self.container = QtWidgets.QWidget()
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setWidget(self.container)
+        self.scroller.setWidgetResizable(True)
+        self.scroller.setWidget(self.container)
         self.container.setLayout(self.layout)
 
-        wlayout = QtWidgets.QVBoxLayout()
-        self.setLayout(wlayout)
-        wlayout.addWidget(self.scroll)
+        self.wlayout = QtWidgets.QVBoxLayout()
+        self.setLayout(self.wlayout)
+        self.wlayout.addWidget(self.scroller)
+        self.update_width()
+
+    def update_width(self):
+        self.scroller.setFixedWidth(self.wlayout.sizeHint().width() + 40)
+        if self.wlayout.sizeHint().height() <= 500:
+            self.scroller.setFixedHeight(self.wlayout.sizeHint().height() )
 
     def add_fieldrow(self, tagtype, initcall=False, active=True):
         '''Add rows to form layout upon creation of MainWindow, insert rows
@@ -65,7 +80,7 @@ class FlacFolderWind(QtWidgets.QWidget):
             index = self.layout.getWidgetPosition(self.add_btn)[0]
             self.layout.insertRow(index, f"{vorbis_dict[tagtype]} :", a)
             self.remover.addItem(tagtype)
-            self.flacfile.vcomments[tagtype] = '' 
+            # self.flacfile.vcomments[tagtype] = '' 
         else:
             try:
                 self.layout.addRow(f"{vorbis_dict[tagtype]} :", a)
@@ -82,10 +97,22 @@ class FlacFolderWind(QtWidgets.QWidget):
 
 
         self.widgets[tagtype] = a
-        width = a.fontMetrics().boundingRect(a.placeholderText()).width()
-        if  width + 10 > self.max_lineedit:
-            self.max_lineedit = width + 10
-            a.setMinimumWidth(self.max_lineedit)
+
+        if initcall:
+
+            width = a.fontMetrics().boundingRect(a.placeholderText()).width()
+            labelindex = self.layout.getWidgetPosition(a)[0]
+            alabel = self.layout.itemAt(labelindex, self.layout.ItemRole(0)).widget()
+            labelwidth = alabel.fontMetrics().boundingRect(alabel.text()).width()
+
+            if labelwidth > self.max_label:
+                self.max_label = labelwidth
+            if self.remover_width > self.max_label:
+                self.max_label = self.remover_width
+            if  width > self.max_lineedit:
+                self.max_lineedit = width 
+        else:
+            self.update_width()
 
     def remove_tag(self):
         '''Confirm removal of tag from proposed and remove gui row containing it,

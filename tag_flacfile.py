@@ -14,12 +14,17 @@ class FlacFile():
         self.block_dict = self.get_metadata_blocks()
         self.vcomment_block = self.block_dict[4][0]
         self.vcomments, self.venstring = self.get_vorbis_comments()
+        self.last_blocktype = 0
 
     def get_metadata_blocks(self):
         block_dict = {}
 
         breaker = False
         while True:   
+            logging.debug(f"Reading current block, binary {bin(self.allbytes[self.read_pos])[2:]}")
+            type_bin_str = bin(self.allbytes[self.read_pos])[2:]
+            if len(type_bin_str) == 8:  # if first bit set, block is final block
+                breaker = True
             block_type = self.allbytes[self.read_pos]
             next_block_size = int.from_bytes(self.allbytes[self.read_pos+1:self.read_pos + 4])
             logging.debug(f'Getting next block (type {block_type}), size {next_block_size}')
@@ -29,8 +34,6 @@ class FlacFile():
             self.read_pos += next_block_size
             if breaker:
                 break
-            if self.allbytes[self.read_pos] == 129:  # one more loop if padding block ID
-                breaker = True
 
         return block_dict
 
