@@ -26,7 +26,6 @@ class MusMainWindow(QtWidgets.QMainWindow):
         self.file_list.setModel(self.filesystem)
         self.file_list.setRootIndex(self.filesystem.index('C:\\'))
         self.file_list.setColumnWidth(0, 300)
-        self.file_list.resizeColumnToContents(1)
         self.file_list.hideColumn(3)
         self.file_list.hideColumn(2)
         self.file_list.setMinimumSize(360, 300)

@@ -1,5 +1,6 @@
 import sys, re, logging
 from PyQt6 import QtWidgets
+from PyQt6.QtCore import Qt
 from id3_standard_tags import music_tags
 from tag_musfile import MusFile
 from mp3_splice import write_tags
@@ -18,15 +19,12 @@ class MusFolderWind(QtWidgets.QWidget):
         self.fullcommontags = commontags.copy()
         self.commontags = commontags
         self.anymp3 = list(self.mp3files.values())[0]
-        
 
         self.setWindowTitle('Mp3 Tag Edit')
         self.layout = QtWidgets.QFormLayout()
 
-        self.max_lineedit = 0
-        for tagtype in self.commontags:
-            self.add_fieldrow(tagtype, initcall=True)
-
+        self.container = QtWidgets.QWidget()
+        
         self.adder = QtWidgets.QComboBox()
         self.adder.addItems([f'{key}: {value}' for key,value in self.anymp3.tagdict.items()])
         self.add_btn = QtWidgets.QPushButton('Add Tag')
@@ -44,23 +42,45 @@ class MusFolderWind(QtWidgets.QWidget):
                     self.remover.addItem(f'Noncompliant Tag {tagtype}')
         self.remove_btn = QtWidgets.QPushButton('Remove Tag')
         self.remove_btn.clicked.connect(self.remove_tag)
+        
+        fm = self.remover.fontMetrics()
+        self.remover_width = max([fm.boundingRect(self.remover.itemText(i)).width() 
+                        for i in range(self.remover.count())])
+        self.remover.view().setMinimumWidth(self.remover_width)
+
+        self.max_lineedit = 0
+        self.max_label = 0
+
+        for tagtype in self.commontags:
+            self.add_fieldrow(tagtype, initcall=True)
 
         self.layout.addRow(self.add_btn, self.adder)
         self.layout.addRow(self.remove_btn, self.remover)
 
         self.main_button = QtWidgets.QPushButton('Confirm')
         self.main_button.clicked.connect(self.main_clicked)
-        self.layout.addRow('', self.main_button)
+        self.layout.addRow(' ', self.main_button)
+        
 
         self.scroll = QtWidgets.QScrollArea()
-        self.container = QtWidgets.QWidget()
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setWidget(self.container)
+        self.scroller = self.scroll
+        self.scroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        
+        
+        self.scroller.setWidgetResizable(True)
+        self.scroller.setWidget(self.container)
         self.container.setLayout(self.layout)
 
-        wlayout = QtWidgets.QVBoxLayout()
-        self.setLayout(wlayout)
-        wlayout.addWidget(self.scroll)
+        self.wlayout = QtWidgets.QVBoxLayout()
+        self.setLayout(self.wlayout)
+        self.wlayout.addWidget(self.scroller)
+        self.update_width()
+
+    def update_width(self):
+        self.scroller.setFixedWidth(self.wlayout.sizeHint().width() + 40)
+        if self.wlayout.sizeHint().height() <= 500:
+            self.scroller.setFixedHeight(self.wlayout.sizeHint().height() )
+            
 
 
     def add_fieldrow(self, tagtype, initcall=False, active=True):
@@ -71,16 +91,18 @@ class MusFolderWind(QtWidgets.QWidget):
         if not initcall:
             index = self.layout.getWidgetPosition(self.add_btn)[0]
             try:
-                self.layout.insertRow(index, f"{music_tags[tagtype][0]} :", a)
+                labeltext = f"{music_tags[tagtype][0]} :"
+                self.layout.insertRow(index, labeltext, a)
                 self.remover.addItem(music_tags[tagtype][0])
             except KeyError:
                 try:
-                    self.layout.insertRow(index, f"{self.anymp3.tagdict[tagtype]} :", a)
+                    labeltext = f"{self.anymp3.tagdict[tagtype]} :"
+                    self.layout.insertRow(index, labeltext, a)
                     self.remover.addItem(self.anymp3.tagdict[tagtype]) 
                 except KeyError:
-                    self.layout.insertRow(index, f"Noncompliant Tag {tagtype} :", a)
-                    self.remover.addItem(f"Noncompliant Tag {tagtype}")
-            self.musfile.active_tags[tagtype] = '' 
+                    labeltext = f"Noncompliant Tag {tagtype} :"
+                    self.layout.insertRow(index, labeltext, a)
+                    self.remover.addItem(f"Noncompliant Tag {tagtype}") 
         else:
             try:
                 self.layout.addRow(f"{music_tags[tagtype][0]} :", a)
@@ -96,10 +118,24 @@ class MusFolderWind(QtWidgets.QWidget):
 
 
         self.widgets[tagtype] = a
-        width = a.fontMetrics().boundingRect(a.placeholderText()).width()
-        if  width > self.max_lineedit:
-            self.max_lineedit = width + 10
-            a.setMinimumWidth(self.max_lineedit)
+
+        if initcall:
+
+            width = a.fontMetrics().boundingRect(a.placeholderText()).width()
+            labelindex = self.layout.getWidgetPosition(a)[0]
+            alabel = self.layout.itemAt(labelindex, self.layout.ItemRole(0)).widget()
+            labelwidth = alabel.fontMetrics().boundingRect(alabel.text()).width()
+
+            if labelwidth > self.max_label:
+                self.max_label = labelwidth
+            if self.remover_width > self.max_label:
+                self.max_label = self.remover_width
+            if  width > self.max_lineedit:
+                self.max_lineedit = width 
+
+        # if not initcall:
+        #     self.update_width()
+        
 
     def remove_tag(self):
         '''Confirm removal of tag from proposed and remove gui row containing it,
@@ -156,12 +192,16 @@ class MusFolderWind(QtWidgets.QWidget):
             if not tagtype in newtags:
                 for mp3 in self.mp3files.values():
                     mp3.active_tags.pop(tagtype)
+
+        for tagtype, tagdata in newtags.items():
+            if not tagtype in self.fullcommontags:
+                for mp3 in self.mp3files.values():
+                    mp3.active_tags[tagtype] = tagdata
+
         logging.debug('Handing off to write_tags...')
         logging.debug(f'newtags = {newtags}')
         full_success = 0
-        # for type, tag in newtags.items():
-        #     for mp3 in self.mp3files.values():
-        #         mp3.active_tags[type] = tag  
+ 
         for mp3 in self.mp3files.values():
             for type, tag in newtags.items():
                 mp3.active_tags[type] = tag            
